@@ -1,0 +1,83 @@
+
+CUCUMBER REPORT PROJECT:
+========================>
+
+JENKINS
+========
+To run the project in maven commend:
+------------------------------------
+   => mvn test -Dtest=RunnerClass
+
+
+Jenkins pipeline script for cucumber project:
+---------------------------------------------
+   => 
+pipeline {
+    agent any
+    options {
+        ws("C:/Jenkins/Packages/TestPom")  // which is run for local workspace(WS)
+    }
+    stages {
+             stage('CucumberReport'){
+                  steps {
+                bat 'mvn test -Dtest=RunnerClass'
+                }
+            }  
+           }
+           post{  // To create cucumber report
+               always{
+                  cucumber buildStatus: 'UNCHANGED', customCssFiles: '', customJsFiles: '', fileIncludePattern: '**/*.json', jsonReportDirectory: 'C:\\\\Jenkins\\\\Packages\\\\TestPom\\\\target\\\\cucumber-report\\\\', reportTitle: 'Report', sortingMethod: 'ALPHABETICAL', trendsLimit: 5}
+                     }
+                  }
+
+Jenkins pipeline script for Auto-Qba:
+-------------------------------------
+    =>
+pipeline 
+{
+	agent any
+	stages 
+	{
+		stage('Clean Workspace')  // To delete entire workspace in jenkins
+		{
+			steps{
+				deleteDir()
+			}
+		}
+		stage('Copy File') // To copy the particular file in other dir to jenkins workspace
+		{
+			steps 
+			{
+				dir("C:/Jenkins/Packages/Delivery Package-Auto-Q BA NG Build v2.4.4/Client-Auto-Q BA NG Build v2.4.4") 
+				{
+					fileOperations([fileCopyOperation(excludes: '', flattenFiles: true, includes: 'feautoqba.jar,autoqba.jar,autoqba.ini,autoqba.html', targetLocation: "${WORKSPACE}")])
+				}
+			}			                                                                        //( File name ------------------------------------)
+		}
+		stage('Execution') 
+		{
+			steps 
+			{
+				bat 'java -jar "%WORKSPACE%/feautoqba.jar" "Guidewire" "TestCases" "admin2" "%WORKSPACE%/" "Execution"'				
+			}
+		}
+	}
+	post 
+	{
+		always
+		{
+			junit allowEmptyResults: true, skipMarkingBuildUnstable: true, skipPublishingChecks: true, testResults: '**/Guidewire.xml'
+		}
+	}
+}
+
+
+PROJECT
+=======
+   1) When chrome invoke the old version instead off new version, Need to update the java JDK file for latest version(As of now 17 is stable version)
+   2) To copy the particular file in other dir to jenkins workspace
+   3) To delete entire workspace in jenkins
+   
+ADD ON
+======
+   1) Using cyclos site Create the address by API and validate the address by web automation.
